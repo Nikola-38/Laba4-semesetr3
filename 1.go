@@ -181,73 +181,87 @@ func main() {
 	// Инициализация StopWatch
 	sw := StopWatch{}
 
-	// 1. Замер времени для Mutex
+	// Замер общего времени выполнения программы
 	sw.Start()
+
+	// 1. Замер времени для Mutex
+	startTime := time.Now()
 	var wgMutex sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgMutex.Add(1) // Увеличиваем счётчик WaitGroup
 		go runWithMutex(numChars, &wgMutex)
 	}
 	wgMutex.Wait() // Ожидаем завершения всех горутин
-	fmt.Printf("Mutex execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	mutexTime := time.Since(startTime)
+	fmt.Printf("Mutex execution took: %.2fns\n", float64(mutexTime.Nanoseconds()))
 
 	// 2. Замер времени для Semaphore
-	sw.Start()
+	startTime = time.Now()
 	var wgSemaphore sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgSemaphore.Add(1)
 		go runWithSemaphore(numChars, &wgSemaphore)
 	}
 	wgSemaphore.Wait()
-	fmt.Printf("Semaphore execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	semaphoreTime := time.Since(startTime)
+	fmt.Printf("Semaphore execution took: %.2fns\n", float64(semaphoreTime.Nanoseconds()))
 
 	// 3. Замер времени для SemaphoreSlim
-	sw.Start()
+	startTime = time.Now()
 	var wgSemaphoreSlim sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgSemaphoreSlim.Add(1)
 		go runWithSemaphoreSlim(numChars, &wgSemaphoreSlim)
 	}
 	wgSemaphoreSlim.Wait()
-	fmt.Printf("SemaphoreSlim execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	semaphoreSlimTime := time.Since(startTime)
+	fmt.Printf("SemaphoreSlim execution took: %.2fns\n", float64(semaphoreSlimTime.Nanoseconds()))
 
 	// 4. Замер времени для SpinLock
-	sw.Start()
+	startTime = time.Now()
 	var wgSpinLock sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgSpinLock.Add(1)
 		go runWithSpinLock(numChars, &wgSpinLock)
 	}
 	wgSpinLock.Wait()
-	fmt.Printf("SpinLock execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	spinLockTime := time.Since(startTime)
+	fmt.Printf("SpinLock execution took: %.2fns\n", float64(spinLockTime.Nanoseconds()))
 
 	// 5. Замер времени для SpinWait
-	sw.Start()
+	startTime = time.Now()
 	var wgSpinWait sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgSpinWait.Add(1)
 		go runWithSpinWait(numChars, &wgSpinWait)
 	}
 	wgSpinWait.Wait()
-	fmt.Printf("SpinWait execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	spinWaitTime := time.Since(startTime)
+	fmt.Printf("SpinWait execution took: %.2fns\n", float64(spinWaitTime.Nanoseconds()))
 
 	// 6. Замер времени для Barrier (с использованием sync.WaitGroup)
-	sw.Start()
+	startTime = time.Now()
 	var wgBarrier sync.WaitGroup
 	wgBarrier.Add(numGoroutines) // Устанавливаем количество горутин, которые должны завершиться
 	for i := 0; i < numGoroutines; i++ {
 		go runWithBarrier(numChars, &wgBarrier)
 	}
 	wgBarrier.Wait() // Ждем завершения всех горутин
-	fmt.Printf("Barrier execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	barrierTime := time.Since(startTime)
+	fmt.Printf("Barrier execution took: %.2fns\n", float64(barrierTime.Nanoseconds()))
 
 	// 7. Замер времени для Monitor
-	sw.Start()
+	startTime = time.Now()
 	var wgMonitor sync.WaitGroup
 	for i := 0; i < numGoroutines; i++ {
 		wgMonitor.Add(1)
 		go runWithMonitor(monitor, numChars, &wgMonitor)
 	}
 	wgMonitor.Wait()
-	fmt.Printf("Monitor execution took: %.2fµs\n", float64(sw.Elapsed().Microseconds()))
+	monitorTime := time.Since(startTime)
+	fmt.Printf("Monitor execution took: %.2fns\n", float64(monitorTime.Nanoseconds()))
+
+	// Выводим общее время выполнения
+	totalTime := time.Since(sw.start)
+	fmt.Printf("Total execution time: %.2fns\n", float64(totalTime.Nanoseconds()))
 }
